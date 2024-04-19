@@ -29,7 +29,7 @@ BEGIN {
 	error = 1
 }
 
-( $3 !~ /^[a-zA-Z0-9,]+$/ || $3 ~ /^,|(,,)|,$/) {
+( $3 !~ /^[a-zA-Z0-9,]*$/ || $3 ~ /^,|(,,)|,$/) {
 	err = NR "- Third field (groups) must be letters or digits separated by commas."
 	errOutput = errOutput err "\n"
 	error = 1
