@@ -1,4 +1,5 @@
-Jean:Dupont:GroupeA,GroupeB:oui:Password123
+Martin:Dupont:GroupeA,GroupeB:oui:Password123
 Marie:Martin:GroupeC:non:Secret456
+Michel:Dubois:GroupeB,GroupeA:NON:azerty123
 Pierre:Dubois:GroupeA,GroupeC:oui:Secure789
 Emilie:Petit:GroupeB:non:Hidden123
