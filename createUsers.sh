@@ -131,6 +131,10 @@ createUserFromInfos() {
 
 	useradd $primary $secondary -c "$firstName $name" "$username"
 
+	password="$(echo "$1" | cut -d" " -f5)"
+	echo "$username:$password" | chpasswd
+	passwd -e "$username" > /dev/null
+
 	unset primary
 	unset secondary
 }
