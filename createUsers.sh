@@ -1,8 +1,8 @@
 #!/bin/bash
 
-localDir="/root/projetLinux/"
-accountsSource="accountsSource"
-awkScript="checkAccounts.awk"
+declare -r localDir="/root/projetLinux/"
+declare -r accountsSource="accountsSource"
+declare -r awkScript="checkAccounts.awk"
 
 # string
 checkFileValidity() { 
@@ -75,7 +75,7 @@ getPrimaryGroup() {
 	group="$(echo "$1" | cut -d, -f1)"
 	createGroupIfNotExist "$group"
 
-	echo "$group"
+	echo "-g $group"
 	return 0
 }
 
@@ -87,13 +87,11 @@ getSecondaryGroups() {
 	fi
 
 	createGroupIfNotExist "$currGroup"
-	groups="$currGroup"
+	groups="-G $currGroup"
 
 	i=3
 	currGroup="$(echo "$1" | cut -d, -f$i)"
 	while [ -n "$currGroup" ] ; do
-		echo "$groups $currGroup"
-		return 0
 		createGroupIfNotExist "$currGroup"
 		groups="$groups,$currGroup"
 
@@ -118,10 +116,8 @@ createUserFromInfos() {
 
 	groups="$(echo "$1" | cut -d" " -f3)"
 	if [ -n "$groups" ] ; then
-		primary=$(getPrimaryGroup $groups)
-		secondary=$(getSecondaryGroups "$groups")
-
-		echo "$username => $primary $secondary"
+		primary="$(getPrimaryGroup $groups)"
+		secondary="$(getSecondaryGroups "$groups")"
 	fi
 
 	sudo="$(echo "$1" | cut -d" " -f4)"
@@ -129,15 +125,21 @@ createUserFromInfos() {
 		if [ -n "$secondary" ]; then
 			secondary="$secondary,sudo"
 		else
-			secondary="sudo"
+			secondary="-G sudo"
 		fi
 	fi
+
+	useradd $primary $secondary -c "$firstName $name" "$username"
+
+	unset primary
+	unset secondary
 }
 
 
 # MAIN
 
-validityReturn=$(checkFileValidity)
+declare -r validityReturn=$(checkFileValidity)
+
 if [ $? -ne 0 ] ; then
 	echo "$validityReturn"
 	exit 1
