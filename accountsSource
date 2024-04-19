@@ -1,6 +1,6 @@
 Martin:Dupont:GroupeA,GroupeB:oui:Password123
 Marie:Martin:GroupeC:non:Secret456
-Michel:Dubois:GroupeB,GroupeA:NON:azerty123
-Pierre:Dubois:GroupeA,GroupeC:oui:Secure789
+Michel:Dubois:GroupeB,GroupeA,GroupeC:NON:azerty123
+Pierre:Dubois:GroupeA,GroupeC,GroupeD:oui:Secure789
 Emilie:Petit:GroupeB:non:Hidden123
 billy:lue:GroupeC:non:Loupilia

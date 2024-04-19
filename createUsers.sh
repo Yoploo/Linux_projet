@@ -53,6 +53,33 @@ userExists(){
 	return 0
 }
 
+# string ($groupList)
+getPrimaryGroup() {
+	echo "$(echo "$1" | cut -d, -f1)"
+	return 0
+}
+
+# string ($groupList)
+getSecondaryGroups() {
+	currGroup="$(echo "$1" | cut -d, -f2)"
+	if [ $currGroup = $1 ] ; then
+		return 0
+	fi
+
+	groups="$currGroup"
+	i=3
+	currGroup="$(echo "$1" | cut -d, -f$i)"
+	while [ -n "$currGroup" ] ; do
+		groups="$groups,$currGroup"
+
+		i=$((i+1))
+		currGroup="$(echo "$1" | cut -d, -f$i)"
+	done
+
+	echo "$groups"
+	return 0
+}
+
 # void ($infosList)
 createUserFromInfos() {
 	firstName="$(echo "$1" | cut -d" " -f1)"
@@ -62,6 +89,14 @@ createUserFromInfos() {
 	userExists "$firstName" "$name"
 	if [ $? -eq 1 ] ; then
 		return 0
+	fi
+
+	groups="$(echo "$1" | cut -d" " -f3)"
+	if [ -n "$groups" ] ; then
+		primary=$(getPrimaryGroup $groups)
+		secondary=$(getSecondaryGroups "$groups")
+
+		echo "$username => $primary $secondary"
 	fi
 }
 
