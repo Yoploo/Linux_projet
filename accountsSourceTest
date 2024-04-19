@@ -1,5 +1,5 @@
 M1artin::GroupeA,Grou6peB:ouii:Password123
-Marie:Martin:GroupeC:non:Secret456
+Marie:Martin:GroupeC,:non:Secret456
 Michel:Du^bois:GroupeB,GroupeA:NON:azerty
 Pierrre:Dubois:GroupeA,,GroupeC:oui:Secure789
 Emilie:Petit:GroupeB:non:Hidden123
