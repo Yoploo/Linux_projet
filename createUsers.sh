@@ -45,17 +45,37 @@ generateUsername() {
 
 # int ($firstName, $name)
 userExists(){
-	accounts=$(grep "$1 $2" /etc/passwd)
+	accounts=$(cat /etc/passwd | cut -d: -f5 | grep -c "$1 $2")
 
-	if [ -n "$accounts" ] ; then
+	if [ $accounts -gt 0 ] ; then
 		return 1
 	fi
 	return 0
 }
 
+# int ($groupName)
+createGroupIfNotExist(){
+	foundGroups="$(cat /etc/group | cut -d: -f1 | grep "$1")"
+
+	oldSeparator=$IFS
+	IFS=$'\n'
+	for group in $foundGroups; do
+		if [ "$group" = "$1" ]; then
+			return 1
+		fi
+	done
+	IFS=$oldSeparator
+
+	groupadd "$1"
+	return 0
+}
+
 # string ($groupList)
 getPrimaryGroup() {
-	echo "$(echo "$1" | cut -d, -f1)"
+	group="$(echo "$1" | cut -d, -f1)"
+	createGroupIfNotExist "$group"
+
+	echo "$group"
 	return 0
 }
 
@@ -66,10 +86,15 @@ getSecondaryGroups() {
 		return 0
 	fi
 
+	createGroupIfNotExist "$currGroup"
 	groups="$currGroup"
+
 	i=3
 	currGroup="$(echo "$1" | cut -d, -f$i)"
 	while [ -n "$currGroup" ] ; do
+		echo "$groups $currGroup"
+		return 0
+		createGroupIfNotExist "$currGroup"
 		groups="$groups,$currGroup"
 
 		i=$((i+1))
@@ -97,6 +122,15 @@ createUserFromInfos() {
 		secondary=$(getSecondaryGroups "$groups")
 
 		echo "$username => $primary $secondary"
+	fi
+
+	sudo="$(echo "$1" | cut -d" " -f4)"
+	if [ $sudo = "oui" ]; then
+		if [ -n "$secondary" ]; then
+			secondary="$secondary,sudo"
+		else
+			secondary="sudo"
+		fi
 	fi
 }
 
