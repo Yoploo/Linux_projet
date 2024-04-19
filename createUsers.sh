@@ -1,11 +1,11 @@
 #!/bin/bash
 
 localDir="/root/projetLinux/"
-accountsSource="accountsSourceTest"
+accountsSource="accountsSource"
 awkScript="checkAccounts.awk"
 
 # string
-function checkFileValidity() { 
+checkFileValidity() { 
 	if [ ! -e $localDir$accountsSource ] ; then
 		echo "Accounts source file does not exist."
 		return 1
@@ -25,10 +25,61 @@ function checkFileValidity() {
 	return 0
 }
 
+# string ($fileContent, $lineNumber)
+getFileLine() {
+	echo "$(echo "$1" | cut -d\| -f$2)"
+	return 0
+}
+
+# string ($firstname, $name)
+generateUsername() {
+	username=$(echo "$1" | cut -c1)$(echo "$2")
+	occurencies=$(grep -c "$username" /etc/passwd)
+	if [ $occurencies -ne 0 ] ; then
+		username="$username$occurencies"
+	fi
+
+	echo "$username"
+	return 0
+}
+
+# int ($firstName, $name)
+userExists(){
+	accounts=$(grep "$1 $2" /etc/passwd)
+
+	if [ -n "$accounts" ] ; then
+		return 1
+	fi
+	return 0
+}
+
+# void ($infosList)
+createUserFromInfos() {
+	firstName="$(echo "$1" | cut -d" " -f1)"
+	name="$(echo "$1" | cut -d" " -f2)"
+	username=$(generateUsername "$firstName" "$name")
+
+	userExists "$firstName" "$name"
+	if [ $? -eq 1 ] ; then
+		return 0
+	fi
+}
+
+
+# MAIN
+
 validityReturn=$(checkFileValidity)
 if [ $? -ne 0 ] ; then
 	echo "$validityReturn"
 	exit 1
 fi
 
-echo "Pas d'erreurs"
+i=1
+currLine=$(getFileLine "$validityReturn" $i)
+
+while [ -n "$currLine" ] ; do
+	createUserFromInfos "$currLine"
+
+	i=$((i+1))
+	currLine=$(getFileLine "$validityReturn" $i)
+done
