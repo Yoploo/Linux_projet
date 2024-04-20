@@ -109,7 +109,7 @@ populateHomeDir() {
 	j=0
 	while [ $j -lt $fileNumber ]; do
 		fileSize=$((RANDOM % 45 + 6))
-		head -c $fileSize"M" < /dev/urandom > "/home/$1/fic$j"
+		head -c $fileSize"M" /dev/urandom > "/home/$1/fic$j"
 		j=$((j+1))
 	done
 	return 0
