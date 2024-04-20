@@ -89,17 +89,29 @@ getSecondaryGroups() {
 	createGroupIfNotExist "$currGroup"
 	groups="-G $currGroup"
 
-	i=3
-	currGroup="$(echo "$1" | cut -d, -f$i)"
+	k=3
+	currGroup="$(echo "$1" | cut -d, -f$k)"
 	while [ -n "$currGroup" ] ; do
 		createGroupIfNotExist "$currGroup"
 		groups="$groups,$currGroup"
 
-		i=$((i+1))
-		currGroup="$(echo "$1" | cut -d, -f$i)"
+		k=$((k+1))
+		currGroup="$(echo "$1" | cut -d, -f$k)"
 	done
 
 	echo "$groups"
+	return 0
+}
+
+# void ($username)
+populateHomeDir() {
+	fileNumber=$((RANDOM % 5 + 6))
+	j=0
+	while [ $j -lt $fileNumber ]; do
+		fileSize=$((RANDOM % 45 + 6))
+		head -c $fileSize"M" < /dev/urandom > "/home/$1/fic$j"
+		j=$((j+1))
+	done
 	return 0
 }
 
@@ -129,11 +141,13 @@ createUserFromInfos() {
 		fi
 	fi
 
-	useradd $primary $secondary -c "$firstName $name" "$username"
+	useradd $primary $secondary -c "$firstName $name" -m "$username"
 
 	password="$(echo "$1" | cut -d" " -f5)"
 	echo "$username:$password" | chpasswd
 	passwd -e "$username" > /dev/null
+
+	populateHomeDir $username
 
 	unset primary
 	unset secondary
