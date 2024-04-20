@@ -65,7 +65,7 @@ isInSecondaryGroup() {
 	return 0
 }
 
-#string ($username, $secondary = "")
+#int/bool + string ($username, $secondary = "")
 toStringSudoer() {
 	isInSecondaryGroup "$username" "sudo" "$secondary" 
 	sudoer=$?
@@ -74,7 +74,7 @@ toStringSudoer() {
 	else
 		echo "NON"
 	fi
-	return 0
+	return $sudoer
 }
 
 # int/bool ($StringToTest)
@@ -152,11 +152,10 @@ for line in $humans; do
 		fi
 	fi
 
-	if [ -n "$onlySudoer" ]; then
-		isInSecondaryGroup "$username" "sudo" "$secondary"
-		if [ $? -ne $onlySudoer ]; then
-			continue
-		fi
+	sudoerYesOrNo=$(toStringSudoer "$username" "$secondary")
+
+	if [ -n "$onlySudoer" -a $? -ne $onlySudoer ]; then
+		continue
 	fi
 
 	homeDir=$(echo "$line" | cut -d: -f6)
