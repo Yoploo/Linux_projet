@@ -54,6 +54,10 @@ isInSecondaryGroup() {
 		if [ "$currGroup" = "$2" ]; then
 			return 1
 		fi
+		if [ "$currGroup" = "$secondaryGroups" ]; then
+			break
+		fi
+
 		j=$((j+1))
 		currGroup=$(echo "$secondaryGroups" | cut -d, -f$j)
 	done
@@ -73,11 +77,53 @@ toStringSudoer() {
 	return 0
 }
 
+# int/bool ($StringToTest)
+isParameter(){
+	if [ -z "$1" -o "$1" = "-g" -o "$1" = "-G" -o "$1" = "-s" -o "$1" = "-u" ]; then
+		return 0
+	fi
+	return 1
+}
 
-
+# void ($flagName, $flagValue)
+isSetFlag(){
+	if [ -n "$2" ]; then
+		echo "Flag $1 is set multiple times"
+		exit 1
+	fi
+}
 
 
 #MAIN
+
+while [ $# -gt 0 ]; do
+	flag=$1
+	shift
+	isParameter $1
+	if [ $? -ne 1 ]; then
+		echo "Invalid parameter value $1"
+		exit 1
+	fi
+	case "$flag" in
+		-g)
+			isSetFlag "$flag" "$onlySecondary"
+			declare -r onlySecondary="$1";;
+		-G)
+			isSetFlag "$flag" "$onlyPrimary"
+			declare -r onlyPrimary="$1";;
+		-s)
+			isSetFlag "$flag" "$onlySudoer"
+			if [ "$1" != "1" -a "$1" != "0" ]; then
+				echo "Invalid parameter value : $1. -s flag value should be 1 or 0"
+				exit 1
+			fi
+			declare -r onlySudoer=$1;;
+		-u)
+			isSetFlag "$flag" "$named"
+			declare -r named="$1";;
+	esac
+	shift
+done
 
 declare -r humans=$(awk -F: '($3 >= 1000 && $1 != "nobody"){print()}' /etc/passwd)
 declare -r oldSeparator=$IFS
@@ -85,10 +131,18 @@ IFS=$'\n'
 
 for line in $humans; do
 	username=$(echo "$line" | cut -d: -f1)
-	fullName=$(echo "$line" | cut -d: -f5)
 	groups=$(groups $username)
 	primary=$(echo "$groups" | cut -d" " -f3)
 	secondary=$(getSecondaryGroups "$groups")
+
+	if [ -n "$onlySecondary" ]; then
+		isInSecondaryGroup "$username" "$onlySecondary" "$secondary"
+		if [ $? -ne 1 ]; then
+			continue
+		fi
+	fi
+
+	fullName=$(echo "$line" | cut -d: -f5)
 	homeDir=$(echo "$line" | cut -d: -f6)
 	homeDirSize=$(du -sb "$homeDir" | cut -f1)
 
