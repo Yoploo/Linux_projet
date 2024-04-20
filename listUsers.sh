@@ -146,6 +146,13 @@ for line in $humans; do
 		fi
 	fi
 
+	if [ -n "$onlySudoer" ]; then
+		isInSecondaryGroup "$username" "sudo" "$secondary"
+		if [ $? -ne $onlySudoer ]; then
+			continue
+		fi
+	fi
+
 	fullName=$(echo "$line" | cut -d: -f5)
 	homeDir=$(echo "$line" | cut -d: -f6)
 	homeDirSize=$(du -sb "$homeDir" | cut -f1)
