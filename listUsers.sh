@@ -135,6 +135,10 @@ for line in $humans; do
 	primary=$(echo "$groups" | cut -d" " -f3)
 	secondary=$(getSecondaryGroups "$groups")
 
+	if [ -n "$onlyPrimary" -a "$onlyPrimary" != "$primary" ]; then
+		continue
+	fi
+
 	if [ -n "$onlySecondary" ]; then
 		isInSecondaryGroup "$username" "$onlySecondary" "$secondary"
 		if [ $? -ne 1 ]; then
