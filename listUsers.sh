@@ -22,6 +22,20 @@ getSecondaryGroups() {
 	return 0
 }
 
+#string ($size)
+sizeToString() {
+	size=$1
+	res=""
+	units="o Ko Mo Go To"
+	for unit in $units; do
+		res="$((size%1024))$unit $res"
+		size=$((size/1024))
+	done
+	echo "$res"
+	return 0
+}
+
+
 
 #MAIN
 
@@ -35,11 +49,18 @@ for line in $humans; do
 	groups=$(groups $username)
 	primary=$(echo "$groups" | cut -d" " -f3)
 	secondary=$(getSecondaryGroups "$groups")
+	homeDir=$(echo "$line" | cut -d: -f6)
+	homeDirSize=$(du -sb "$homeDir" | cut -f1)
 
 	echo "Utilisateur : $username"
 	echo "Prénom : $(echo "$fullName" | cut -d" " -f1)"
 	echo "Nom : $(echo "$fullName" | cut -d" " -f2)"
 	echo "Groupe primaire : $primary"
 	echo "Groupe secondaires : $secondary"
+
+	IFS=$oldSeparator
+	echo "Répertoire personnel : $(sizeToString $homeDirSize)"
+	IFS=$'\n'
+
 	echo
 done
