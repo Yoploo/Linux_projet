@@ -35,13 +35,13 @@ sizeToString() {
 	return 0
 }
 
-#int/bool ($username, $secondaryGroups = "")
-isSudo() {
-	if [ -z "$2" ]; then
+#int/bool ($username, $groupName, $secondaryGroups = "")
+isInSecondaryGroup() {
+	if [ -z "$3" ]; then
 		userGroups=$(groups $1)
 		secondaryGroups=$(getSecondaryGroups "$userGroups")
 	else
-		secondaryGroups=$2
+		secondaryGroups=$3
 	fi
 
 	if [ "$secondaryGroups" = "Pas de groupe" ]; then
@@ -51,7 +51,7 @@ isSudo() {
 	j=1
 	currGroup=$(echo "$secondaryGroups" | cut -d, -f$j)
 	until [ -z "$currGroup" ]; do
-		if [ "$currGroup" = "sudo" ]; then
+		if [ "$currGroup" = "$2" ]; then
 			return 1
 		fi
 		j=$((j+1))
@@ -63,7 +63,7 @@ isSudo() {
 
 #string ($username, $secondary = "")
 toStringSudoer() {
-	isSudo "$username" "$secondary" 
+	isInSecondaryGroup "$username" "sudo" "$secondary" 
 	sudoer=$?
 	if [ $sudoer -eq 1 ]; then
 		echo "OUI"
