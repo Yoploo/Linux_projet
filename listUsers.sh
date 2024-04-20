@@ -131,6 +131,12 @@ IFS=$'\n'
 
 for line in $humans; do
 	username=$(echo "$line" | cut -d: -f1)
+	fullName=$(echo "$line" | cut -d: -f5)
+
+	if [ -n "$named" -a "$named" != "$username" -a "$named" != "$fullName" ]; then
+		continue
+	fi
+
 	groups=$(groups $username)
 	primary=$(echo "$groups" | cut -d" " -f3)
 	secondary=$(getSecondaryGroups "$groups")
@@ -153,7 +159,6 @@ for line in $humans; do
 		fi
 	fi
 
-	fullName=$(echo "$line" | cut -d: -f5)
 	homeDir=$(echo "$line" | cut -d: -f6)
 	homeDirSize=$(du -sb "$homeDir" | cut -f1)
 
