@@ -5,7 +5,7 @@ getSecondaryGroups() {
 	next=$(echo "$1" | cut -d" " -f4)
 
 	if [ -z "$next" ]; then
-		echo "Pas de groupes"
+		echo "Pas de groupe"
 		return 0
 	fi
 	secondary="$next"
@@ -35,12 +35,52 @@ sizeToString() {
 	return 0
 }
 
+#int/bool ($username, $secondaryGroups = "")
+isSudo() {
+	if [ -z "$2" ]; then
+		userGroups=$(groups $1)
+		secondaryGroups=$(getSecondaryGroups "$userGroups")
+	else
+		secondaryGroups=$2
+	fi
+
+	if [ "$secondaryGroups" = "Pas de groupe" ]; then
+		return 0
+	fi
+
+	j=1
+	currGroup=$(echo "$secondaryGroups" | cut -d, -f$j)
+	until [ -z "$currGroup" ]; do
+		if [ "$currGroup" = "sudo" ]; then
+			return 1
+		fi
+		j=$((j+1))
+		currGroup=$(echo "$secondaryGroups" | cut -d, -f$j)
+	done
+
+	return 0
+}
+
+#string ($username, $secondary = "")
+toStringSudoer() {
+	isSudo "$username" "$secondary" 
+	sudoer=$?
+	if [ $sudoer -eq 1 ]; then
+		echo "OUI"
+	else
+		echo "NON"
+	fi
+	return 0
+}
+
+
+
 
 
 #MAIN
 
-humans=$(awk -F: '($3 >= 1000 && $1 != "nobody"){print()}' /etc/passwd)
-oldSeparator=$IFS
+declare -r humans=$(awk -F: '($3 >= 1000 && $1 != "nobody"){print()}' /etc/passwd)
+declare -r oldSeparator=$IFS
 IFS=$'\n'
 
 for line in $humans; do
@@ -62,5 +102,6 @@ for line in $humans; do
 	echo "Répertoire personnel : $(sizeToString $homeDirSize)"
 	IFS=$'\n'
 
+	echo "Sudoer : $(toStringSudoer "$username" "$secondary")"
 	echo
 done
