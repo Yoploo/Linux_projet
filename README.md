@@ -24,6 +24,12 @@ Le format et l'intégrité des données saisies dans chaque ligne de la liste so
 - sudo : "oui" ou "non"
 - password : Doit faire minimum 8 caractères
 
+### clear.sh
+
+clear.sh est un script qui supprime les utilisateurs qui sont dans accountsSource.
+
+Les valeurs sont hardcodées donc c'est pas adptatif.
+
 ## 2 - listUsers.sh
 
 Ce script sert à donner les informations sur des utilisateurs humains.
